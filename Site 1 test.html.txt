@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FanSpace</title>
+    <!-- Flowbite CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.css" rel="stylesheet" />
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet" />
+    <style>
+        :root {
+            --primary-color: #5D5CDE;
+            --text-color: #333;
+            --bg-color: #FFFFFF;
+            --card-bg: #f9fafb;
+            --border-color: #e5e7eb;
+            --interaction-color: #5D5CDE;
+            --muted-color: #6b7280;
+            --creator-tag-bg: #e0e7ff;
+            --creator-tag-text: #4f46e5;
+            --premium-color: #f59e0b;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --text-color: #e5e7eb;
+                --bg-color: #181818;
+                --card-bg: #1f2937;
+                --border-color: #374151;
+                --muted-color: #9ca3af;
+                --creator-tag-bg: #312e81;
+                --creator-tag-text: #a5b4fc;
+            }
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s ease;
+        }
+
+        .app-container {
+            max-width: 768px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            backdrop-filter: blur(8px);
+            background-color: rgba(var(--bg-color-rgb, 255, 255, 255), 0.8);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .feed-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .feed-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .creator-tag {
+            background-color: var(--creator-tag-bg);
+            color: var(--creator-tag-text);
+            padding: 2px 8px;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .premium-badge {
+            background-color: var(--premium-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .content-image {
+            width: 100%;
+            max-height: 500px;
+            object-fit: cover;
+            transition: filter 0.3s ease;
+        }
+
+        .blurred-image {
+            filter: blur(20px);
+        }
+
+        .profile-image {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .profile-image-sm {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .interaction-btn {
+            color: var(--muted-color);
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        .interaction-btn:hover, .interaction-btn.active {
+            color: var(--interaction-color);
+            transform: scale(1.1);
+        }
+
+        .subscribe-btn {
+            background-color: var(--primary-color);
+            color: white;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .subscribe-btn:hover {
+            background-color: #4a49b0;
+            transform: translateY(-2px);
+        }
+
+        .tab-active {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .animate-pulse {
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .5;
+            }
+        }
+
+        .lock-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            color: white;
+            cursor: pointer;
+        }
+
+        .comment-area {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .comment-area.open {
+            max-height: 500px;
+        }
+
+        .bottom-modal {
+            position: fixed;
+            bottom: -100%;
+            left: 0;
+            right: 0;
+            background-color: var(--card-bg);
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+            z-index: 50;
+            transition: bottom 0.3s ease;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .bottom-modal.open {
+            bottom: 0;
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s;
+        }
+
+        .modal-backdrop.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Animation for new content */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(93, 92, 222, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- App Container -->
+    <div class="app-container">
+        <!-- Navigation -->
+        <nav class="navbar flex items-center justify-between py-4">
+            <h1 class="text-2xl font-bold">FanSpace</h1>
+            <div class="flex items-center gap-4">
+                <button id="theme-toggle" class="p-2">
+                    <i id="theme-icon" class="fas fa-moon"></i>
+                </button>
+                <div class="relative">
+                    <button id="profile-menu-button" class="flex items-center gap-2">
+                        <img src="https://picsum.photos/seed/user74/200" alt="Profile" class="w-8 h-8 rounded-full">
+                        <span class="hidden sm:inline">Account</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="pb-20">
+            <!-- Tabs -->
+            <div class="flex border-b border-gray-200 mb-6" id="tabs">
+                <button class="tab-btn py-3 px-4 text-center flex-1 tab-active" data-tab="feed">
+                    <i class="fas fa-home mr-2"></i>Feed
+                </button>
+                <button class="tab-btn py-3 px-4 text-center flex-1" data-tab="discover">
+                    <i class="fas fa-compass mr-2"></i>Discover
+                </button>
+                <button class="tab-btn py-3 px-4 text-center flex-1" data-tab="notifications">
+                    <i class="fas fa-bell mr-2"></i>Notifications
+                </button>
+                <button class="tab-btn py-3 px-4 text-center flex-1" data-tab="messages">
+                    <i class="fas fa-envelope mr-2"></i>Messages
+                </button>
+            </div>
+
+            <!-- Content Area -->
+            <div id="tab-content">
+                <!-- Feed Tab (initially visible) -->
+                <div id="feed-tab" class="tab-content space-y-6">
+                    <!-- Content will be dynamically loaded here -->
+                </div>
+
+                <!-- Discover Tab -->
+                <div id="discover-tab" class="tab-content hidden space-y-6">
+                    <h2 class="text-xl font-bold mb-4">Discover Creators</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="discover-creators">
+                        <!-- Creator cards will be dynamically loaded here -->
+                    </div>
+                </div>
+
+                <!-- Notifications Tab -->
+                <div id="notifications-tab" class="tab-content hidden space-y-4">
+                    <h2 class="text-xl font-bold mb-4">Notifications</h2>
+                    <div id="notifications-list">
+                        <!-- Notifications will be dynamically loaded here -->
+                    </div>
+                </div>
+
+                <!-- Messages Tab -->
+                <div id="messages-tab" class="tab-content hidden space-y-4">
+                    <h2 class="text-xl font-bold mb-4">Messages</h2>
+                    <div id="messages-list">
+                        <!-- Messages will be dynamically loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading spinner -->
+            <div id="loading-spinner" class="hidden flex justify-center items-center my-8">
+                <div class="spinner"></div>
+            </div>
+        </main>
+
+        <!-- Bottom Menu -->
+        <div class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-3 px-6 flex justify-around">
+            <button class="text-center" onclick="switchTab('feed')">
+                <i class="fas fa-home text-lg"></i>
+                <p class="text-xs mt-1">Feed</p>
+            </button>
+            <button class="text-center" onclick="switchTab('discover')">
+                <i class="fas fa-compass text-lg"></i>
+                <p class="text-xs mt-1">Discover</p>
+            </button>
+            <button class="text-center" id="create-content-btn">
+                <i class="fas fa-plus-circle text-lg text-primary-600"></i>
+                <p class="text-xs mt-1">Create</p>
+            </button>
+            <button class="text-center" onclick="switchTab('notifications')">
+                <i class="fas fa-bell text-lg"></i>
+                <p class="text-xs mt-1">Alerts</p>
+            </button>
+            <button class="text-center" onclick="switchTab('messages')">
+                <i class="fas fa-envelope text-lg"></i>
+                <p class="text-xs mt-1">Messages</p>
+            </button>
+        </div>
+    </div>
+
+    <!-- Creator Profile Modal -->
+    <div id="profile-modal" class="bottom-modal">
+        <div class="p-4 relative">
+            <button id="close-profile-modal" class="absolute top-4 right-4 text-gray-500">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <div class="flex flex-col items-center mt-4">
+                <img id="profile-modal-image" src="" alt="Creator Profile" class="w-24 h-24 rounded-full object-cover">
+                <h3 id="profile-modal-name" class="text-xl font-bold mt-2"></h3>
+                <p id="profile-modal-handle" class="text-sm text-gray-500">@username</p>
+                <div class="flex items-center gap-2 mt-2">
+                    <span id="profile-modal-creator-tag" class="creator-tag">Creator</span>
+                    <span id="profile-modal-subscription" class="premium-badge hidden">Premium</span>
+                </div>
+                <div class="flex justify-between w-full mt-4 px-8">
+                    <div class="text-center">
+                        <p class="font-bold" id="profile-modal-posts">0</p>
+                        <p class="text-sm text-gray-500">Posts</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="font-bold" id="profile-modal-fans">0</p>
+                        <p class="text-sm text-gray-500">Fans</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="font-bold" id="profile-modal-likes">0</p>
+                        <p class="text-sm text-gray-500">Likes</p>
+                    </div>
+                </div>
+                <button id="profile-modal-subscribe" class="subscribe-btn w-full py-2 rounded-full mt-6 font-medium">
+                    Subscribe - $9.99/month
+                </button>
+                <p class="text-sm text-gray-500 mt-2">
+                    <i class="fas fa-check-circle text-green-500 mr-1"></i> Verified Creator
+                </p>
+            </div>
+
+            <div class="mt-6">
+                <h4 class="font-bold text-lg">About</h4>
+                <p id="profile-modal-bio" class="mt-2 text-gray-600 dark:text-gray-300"></p>
+            </div>
+
+            <div class="mt-6">
+                <h4 class="font-bold text-lg mb-4">Recent Posts</h4>
+                <div id="profile-modal-posts-container" class="space-y-4">
+                    <!-- Recent posts will be added dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Post Modal -->
+    <div id="create-post-modal" class="bottom-modal">
+        <div class="p-4 relative">
+            <button id="close-create-modal" class="absolute top-4 right-4 text-gray-500">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <h3 class="text-xl font-bold mt-2 mb-4">Create New Post</h3>
+
+            <div class="space-y-4">
+                <div>
+                    <label for="post-content" class="block mb-2 text-sm font-medium">What's on your mind?</label>
+                    <textarea id="post-content" rows="4" class="bg-gray-50 border border-gray-300 text-gray-900 text-base rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Share something with your fans..."></textarea>
+                </div>
+
+                <div>
+                    <label class="block mb-2 text-sm font-medium">Add Media</label>
+                    <div class="flex items-center justify-center w-full">
+                        <label for="post-media" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600">
+                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                <i class="fas fa-cloud-upload-alt mb-3 text-2xl text-gray-400"></i>
+                                <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">Click to upload media</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, or GIF</p>
+                            </div>
+                            <input id="post-media" type="file" class="hidden" accept="image/*" />
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="premium-content" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                        <span class="ml-3 text-sm font-medium">Premium Content (Subscribers Only)</span>
+                    </label>
+                </div>
+
+                <button id="submit-post" class="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-base px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
+                    Post Content
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Backdrop -->
+    <div id="modal-backdrop" class="modal-backdrop"></div>
+
+    <!-- Flowbite JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.js"></script>
+    <script>
+        // Theme toggle functionality
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+
+        // Check for saved theme preference or use the system preference
+        const savedTheme = localStorage.getItem('theme') ||
+            (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
+        // Apply the initial theme
+        if (savedTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+            themeIcon.classList.remove('fa-moon');
+            themeIcon.classList.add('fa-sun');
+        } else {
+            document.documentElement.classList.remove('dark');
+            themeIcon.classList.remove
